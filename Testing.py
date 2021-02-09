@@ -14,7 +14,7 @@ class testingBM:
 		print("this only tests the clock algorithm, buffer management features (pin and unpin) are not tested.")
 		status = True
 		
-		print("1) Creating a smaple buffer of five frames\n")
+		print("1) Creating a sample buffer of five frames\n")
 		buf = []
 		for i in range(5):
 			buf.append(frame())
@@ -72,25 +72,30 @@ class testingBM:
 		status = True
 		print("1) Create a buffer pool of five frames...\n")
 		buf = bufferManager(5)		
-        
+		#buf.printBufferContent()
 		print("2) Try to pin 10 new pages and write something in each page ")
 		print("Requires that first five pages are evicted from buffer pool (and written to disk),")
 		print("so the last five pages are pinned")
 		print("")
 		
-		for i in range(10):
+		for i in range(10): #change to 10
 			pageNumber = i + 100
+			#buf.printBufferContent()
 			pageX = buf.pin(pageNumber, True)
+			#buf.printBufferContent()
 			pageX.content = "content {}".format(pageNumber)
+			print(pageX.content)
 			buf.unpin((pageNumber), True)
+			#buf.printBufferContent()
 		
 		print(".... Pinning of 10 pages suceeded\n")
-		#buf.printBufferContent()
+		buf.printBufferContent()
 		
 		print("3) Try to read the content of the 10 created pages")
 		for i in range(10):
 			pageNumber = i + 100
 			pageX = buf.pin(pageNumber, False)
+			print(pageX.content)
 			if pageX.content != "content {}".format(pageNumber):
 				print("....Error: page {} content is not correct\n".format(pageNumber))
 				status = False
@@ -259,6 +264,20 @@ diskMnger = diskManager()
 
 t1 = t.test1()
 
-diskMnger.deleteAllPagesOnDisk()
 
+diskMnger.deleteAllPagesOnDisk()		
 t2 = t.test2()
+
+diskMnger.deleteAllPagesOnDisk()		
+t3 = t.test3()
+
+diskMnger.deleteAllPagesOnDisk()		
+t4 = t.test4()
+
+diskMnger.deleteAllPagesOnDisk()		
+t5 = t.test5()
+
+if t1 and t2 and t3 and t4 and t5:
+	print("All tests Completed sucessfully...")
+else:
+	print("Some tests have failed...")
