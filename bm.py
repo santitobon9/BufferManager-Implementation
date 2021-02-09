@@ -20,7 +20,33 @@ class clock:
 			if (buffer[idx].pinCount < min) :
 				min = buffer[idx].pinCount
 		return min
-
+	"""
+	def pickVictim(self,buffer):
+		victim = -1
+		signal = 1
+		self.minPinCount = self.findMinPinCount(buffer)
+		print(self.minPinCount)
+		for idx in range(len(buffer)) :	
+			if (buffer[idx].pinCount == self.minPinCount) :
+				buffer[idx].referenced = 0
+				if(buffer[idx].currentPage.pageNo == -1) :
+					# Found empty frame
+					victim = buffer[idx].frameNumber
+					self.current = idx
+					return victim
+		for idx in range(len(buffer)) :
+			if(buffer[idx].referenced == 0)	:
+				# first frame with a 0 reference
+				victim = buffer[idx].frameNumber
+				self.current = idx
+				return victim
+		if(victim == -1 ) :
+			# if all pages in the buffer pool are pinned, raise the exception BufferPoolFullError
+			raise BufferPoolFullError('Buffer Pool Full')
+		else :
+			# find a victim page using the clock algorithm and return the frame number
+			return victim
+	"""
 	def pickVictim(self,buffer):
 		victim = -1
 		signal = 1
@@ -64,22 +90,20 @@ class bufferManager:
 		# page number = 101, new true
 		if (new == True) : 
 			# if new = True, the page is new so no need to read it from disk
-			if (self.clk.current == len(self.buffer)): 
-				# buffer is full, find a victim
-				victim = self.clk.pickVictim(self.buffer)
-				current = self.clk.current
-				print("Writing page number", pageNumber, "into disk")
-				print("Contents writen to disk: ", self.buffer[current].currentPage.content)
-				# write victim page into disk 
-				self.dm.writePageToDisk(self.buffer[current].currentPage)
-				# pickVictim func updated current to index of victim
+			# find a victim
+			victim = self.clk.pickVictim(self.buffer)
 			current = self.clk.current
+			print("Writing page number", victim, "into disk")
+			print("Contents writen to disk: ", self.buffer[current].currentPage.content)
+			if (self.buffer[current].currentPage.pageNo != -1):
+				# write victim page into disk
+				self.dm.writePageToDisk(self.buffer[current].currentPage)
+			# pickVictim func updated current to index of victim
 			self.buffer[current].pinCount += 1
 			self.buffer[current].referenced = 1
 			self.buffer[current].currentPage.pageNo = pageNumber
 			self.buffer[current].dirtyBit = False
 			page = self.buffer[current].currentPage
-			self.clk.current += 1
 			return page
 		else : 
 			# if new = False, the page already exists. So read it from disk if it is not already in the pool. 
