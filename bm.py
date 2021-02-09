@@ -62,28 +62,43 @@ class bufferManager:
 	def pin(self,pageNumber, new = False): 
 		# given a page number, pin the page in the buffer
 		# page number = 101, new true
-		if (new == True) :
+		if (new == True) : 
 			# if new = True, the page is new so no need to read it from disk
-			#find a victim
-			victim = self.clk.pickVictim(self.buffer)
+			if (self.clk.current == len(self.buffer)): 
+				# buffer is full, find a victim
+				victim = self.clk.pickVictim(self.buffer)
+				current = self.clk.current
+				print("Writing page number", pageNumber, "into disk")
+				print("Contents writen to disk: ", self.buffer[current].currentPage.content)
+				# write victim page into disk 
+				self.dm.writePageToDisk(self.buffer[current].currentPage)
+				# pickVictim func updated current to index of victim
 			current = self.clk.current
 			self.buffer[current].pinCount += 1
 			self.buffer[current].referenced = 1
 			self.buffer[current].currentPage.pageNo = pageNumber
-			self.dm.writePageToDisk(self.buffer[current].currentPage)
-			return self.buffer[current].currentPage
-		#else :
+			self.buffer[current].dirtyBit = False
+			page = self.buffer[current].currentPage
+			self.clk.current += 1
+			return page
+		else : 
 			# if new = False, the page already exists. So read it from disk if it is not already in the pool. 
-			
+			for ind in range(len(self.buffer)):
+				if (self.buffer[ind].currentPage.pageNo == pageNumber):
+					# page is in the buffer
+					return self.buffer[ind].currentPage
+			# page not in buffer so read from disk
+			return self.dm.readPageFromDisk(pageNumber)
 		#pass
-    
+
 	#------------------------------------------------------------
 	def unpin(self,pageNumber, dirty):
 		for i in range(len(self.buffer)) :
 			if(self.buffer[i].currentPage.pageNo == pageNumber) :
 				self.buffer[i].pinCount -= 1
 				self.buffer[i].referenced = 0
-				self.buffer[i].dirtyBit = dirty
+				if (dirty == True):
+					self.buffer[i].dirtyBit = True
 				return
 		
 	def flushPage(self,pageNumber): 
