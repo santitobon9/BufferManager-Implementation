@@ -1,0 +1,97 @@
+====== TEST 1 ======
+this only tests the clock algorithm, buffer management features (pin and unpin) are not tested.
+1) Creating a smaple buffer of five frames
+
+2) Call the clock algorithm
+.... clock algorithm chose frame 1 successfully.
+.... Clock algorithm updated referenced attribute correctly.
+
+Test 1 completed successfully....
+
+======= TEST2 ======
+Scenario: more pages than frames (number of pages = 2 * number of frames)
+
+1) Create a buffer pool of five frames...
+
+2) Try to pin 10 new pages and write something in each page
+Requires that first five pages are evicted from buffer pool (and written to disk),
+so the last five pages are pinned
+
+.... Pinning of 10 pages suceeded
+
+3) Try to read the content of the 10 created pages
+.... Reading the 10 pages succeeded.
+
+Test2 completed successfully...
+
+
+======= TEST3 ======
+Scenario: Buffer pool full, cannot pin another page!
+
+1) Create a buffer pool of five frames
+
+2) Pin five new pages without unpinning them
+
+3) Try to pin a sixth page, since buffer pool is full (all pages in buffer have pinCount =1),
+we should get a BufferPoolFullError exception
+.... Expected BufferPoolFullError exception raised
+
+4) Now unpin one of the five pages, so we have one available frame
+
+5) Try to pin a sixth page, we should be able to do that this time
+.... pinning a sixth page succeeded as expected
+
+Test3 completed successfully...
+
+
+======= TEST4 ======
+Two transactions pin the same page with one of them writing to it
+
+1) Create a buffer pool of five frames...
+
+2) Pin new page 350, modify its content, then unpin with dirtyBit=True
+
+3) Pin page 350 again, then unpin with dirtyBit=False (e.g., a read-only transaction)
+expecting that dirty bit stays True
+
+4) Pin 5 pages so page 350 is evicted from buffer pool
+Dirty bit of Page 350 should be True, thereofre, the page should be written to disk
+
+5) pin page 350 again and check its content (it should be read from disk)
+..... Page 350 content is correct!
+
+Test4 completed successfully...
+
+======= TEST5 ======
+Scenario: more pages than frames (number of pages = (2 * number of frames) + 1)
+
+1) Create a buffer pool of five frames...
+
+2) Try to pin 11 new pages and write something in each page
+Requires pinning the first five pages (0 to 4), then pinning the second five pages (5 to 9), then pinning the eleventh page (page #10)
+
+.... Pinning of 11 pages suceeded
+
+3) Try to read the content of pages with odd page number
+content 601
+content 603
+content 605
+content 607
+content 609
+.... Reading pages with odd page number succeeded.
+
+
+4) Try to read the content of pages with even page number
+content 600
+content 602
+content 604
+content 606
+content 608
+content 610
+.... Reading pages with even page number succeeded.
+
+
+Test5 completed successfully...
+
+
+All tests Completed sucessfully...
