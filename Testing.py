@@ -96,7 +96,6 @@ class testingBM:
 			pageNumber = i + 100
 			pageX = buf.pin(pageNumber, False)
 			print(pageX.content)
-			print('here')
 			if pageX.content != "content {}".format(pageNumber):
 				print("....Error: page {} content is not correct\n".format(pageNumber))
 				status = False
