@@ -265,6 +265,20 @@ diskMnger = diskManager()
 
 t1 = t.test1()
 
-diskMnger.deleteAllPagesOnDisk()
 
+diskMnger.deleteAllPagesOnDisk()		
 t2 = t.test2()
+
+diskMnger.deleteAllPagesOnDisk()		
+t3 = t.test3()
+
+diskMnger.deleteAllPagesOnDisk()		
+t4 = t.test4()
+
+diskMnger.deleteAllPagesOnDisk()		
+t5 = t.test5()
+
+if t1 and t2 and t3 and t4 and t5:
+	print("All tests Completed sucessfully...")
+else:
+	print("Some tests have failed...")
